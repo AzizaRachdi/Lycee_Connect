@@ -17,6 +17,6 @@ func main() {
 	}
 	//   Router
 	r := router.Setup()
-	log.Println("HTTP server on :8080")
-	r.Run(":8080")
+	log.Println("HTTP server on :8081")
+	r.Run(":8081")
 }

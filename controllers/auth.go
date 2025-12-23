@@ -8,29 +8,41 @@ import (
 )
 
 func Register(c *gin.Context) {
-	var in struct{ Name, Email, Username, Password, Role string }
+	var in struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+		RoleID   string `json:"role_id"` // UUID du rôle
+	}
 	if err := c.ShouldBindJSON(&in); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "payload invalide"})
 		return
 	}
-	u, err := services.Auth.Register(in.Name, in.Email, in.Username, in.Password, in.Role)
+
+	u, err := services.Auth.Register(in.Name, in.Email, in.Username, in.Password, in.RoleID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, u)
 }
+
 func Login(c *gin.Context) {
 	var in struct{ Login, Password string }
 	if err := c.ShouldBindJSON(&in); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "payload invalide"})
 		return
 	}
+
 	tok, u, err := services.Auth.Login(in.Login, in.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized,
-			gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": tok, "role": u.Role})
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": tok,
+		"role":  u.Role.Description, // ✅ renvoie la description du rôle
+	})
 }
